@@ -1,0 +1,8 @@
+void main(){
+
+int a = 3;
+int b = 5;
+
+int average = (a+b)/2;
+
+}

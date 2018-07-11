@@ -1,7 +1,5 @@
 int main(){
-<<<<<<< HEAD
-printf("a");
-=======
+
 	printf("a");
->>>>>>> origin/documentation
+	return 0;
 }

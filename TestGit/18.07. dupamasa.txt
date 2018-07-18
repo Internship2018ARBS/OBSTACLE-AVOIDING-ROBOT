@@ -1,55 +1,55 @@
-#include Servo.h
+#include <Servo.h>
 Servo servo;
 
-int marginleft,marginright; sensor angles
-int distance;ultrasonic sensor
-long duration=0;ultrasonic sensor
+int marginleft,marginright; //sensor angles
+int distance;//ultrasonic sensor
+long duration=0;//ultrasonic sensor
 
-Motor A
-const int motorPin1  =11;   Pin 14 of L293
-const int motorPin2  = 10;   Pin 10 of L293
-Motor B
-const int motorPin3  = 6;  Pin  7 of L293
-const int motorPin4  = 5;   Pin  2 of L293
+//Motor A
+const int motorPin1  =11;  // Pin 14 of L293
+const int motorPin2  = 10;  // Pin 10 of L293
+//Motor B
+const int motorPin3  = 6; // Pin  7 of L293
+const int motorPin4  = 5;  // Pin  2 of L293
 
-const int trigPin = 7; defines variables ultrasonic sensor
-const int echoPinleft = 12; defines variables ultrasonic sensor
-const int echoPinright = 13; defines variables ultrasonic sensor
+const int trigPin = 7;// defines variables ultrasonic sensor
+const int echoPinleft = 12;// defines variables ultrasonic sensor
+const int echoPinright = 13;// defines variables ultrasonic sensor
 
 void setup(){
-    Serial.begin(9600); Start serial communication boud rate at 9600
-    pinMode(2,INPUT); Pin 2 as signal input for sensor
+    Serial.begin(9600); //Start serial communication boud rate at 9600
+    pinMode(2,INPUT); //Pin 2 as signal input for sensor
   
-    Set pins as outputs for motor
+    //Set pins as outputs for motor
     pinMode(motorPin1, OUTPUT);
     pinMode(motorPin2, OUTPUT);
     pinMode(motorPin3, OUTPUT);
     pinMode(motorPin4, OUTPUT);
   
-    pinMode(trigPin, OUTPUT);  Sets the trigPin as an Output
-    pinMode(echoPinleft, INPUT);  Sets the echoPin as an Input for left sensor
-    pinMode(echoPinright, INPUT);  Sets the echoPin as an Input for right sensor
+    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+    pinMode(echoPinleft, INPUT); // Sets the echoPin as an Input for left sensor
+    pinMode(echoPinright, INPUT); // Sets the echoPin as an Input for right sensor
  
-    servo.attach(4);pin for servomotor
-    servo.write(90);angle for servomotor
+    servo.attach(4);//pin for servomotor
+    servo.write(90);//angle for servomotor
     delay(1000);
-}  SETUP
+} //////////// SETUP
 
 void loop(){
-    Serial.print(distanta );
+    Serial.print("distanta: ");
     Serial.println(distance); 
     forward();
-    if(digitalRead(2)==LOW)  { pin 2 for sensor
-       If no signal print collision detected
-      stopmotor();stop motor if object detected 
-      Serial.println(Collision Detected 90 degrees.);
+    if(digitalRead(2)==LOW)  { //pin 2 for sensor
+      // If no signal print collision detected
+      stopmotor();//stop motor if object detected 
+      Serial.println("Collision Detected 90 degrees.");
       scanare(); 
     }
     else{
-      Serial.println(No Collision Detected);
-       for(int i=90;i=110;i+=2){
-        Serial.println(primul for);
-      Serial.println(Position );
+      Serial.println("No Collision Detected");
+       for(int i=90;i<=110;i+=2){
+        Serial.println("primul for");
+      Serial.println("Position: ");
       Serial.println(i);
       servo.write(i);
       delay(55);
@@ -57,9 +57,9 @@ void loop(){
       break;
        } 
      
-         for(int i=90;i=70;i-=2){
-          Serial.println(al doilea for);
-      Serial.println(Position );
+         for(int i=90;i>=70;i-=2){
+          Serial.println("al doilea for");
+      Serial.println("Position: ");
       Serial.println(i);
       servo.write(i);
       delay(55);
@@ -70,70 +70,70 @@ void loop(){
 
       
     }
-    Serial.println(LOOP end);
+    Serial.println("LOOP end");
 }
- LOOP
+////////////////////////// LOOP
  
 void scanare(){
     delay(200);
 
-    loop for finding the position where the marginleft of the object is by searching form the middle of the car to the left
-    for(int i=94;i=180;i+=2){
-      Serial.println(Position );
+    //loop for finding the position where the marginleft of the object is by searching form the middle of the car to the left
+    for(int i=94;i<=180;i+=2){
+      Serial.println("Position: ");
       Serial.println(i);
       servo.write(i);
       delay(55);
   
       if(digitalRead(2)==HIGH){
-        marginleft=i-90;found the position and store it in a variable
-        i=180;end the loop if we found where the obstacle ends     
+        marginleft=i-90;//found the position and store it in a variable
+        i=180;//end the loop if we found where the obstacle ends     
       }
-    }  scan the right part of the object
+    } /// scan the right part of the object
 
     delay(400);
   
-    loop for finding the position where the marginright of the object is by searching form the middle of the car to the left
-    for(int i=94;i=0;i-=2){
-      Serial.println(Position );
+    //loop for finding the position where the marginright of the object is by searching form the middle of the car to the left
+    for(int i=94;i>=0;i-=2){
+      Serial.println("Position: ");
       Serial.println(i);
       servo.write(i);
       delay(55);
     
       if(digitalRead(2)==HIGH){
-        marginright=90-i;found the position and store it in a variable
-        i=0;end the loop if we found where the obstacle ends
+        marginright=90-i;//found the position and store it in a variable
+        i=0;//end the loop if we found where the obstacle ends
       }
-    }  scan the left part of the object
+    } /// scan the left part of the object
 
     delay(500);
 
-    servo.write(90);reposition the sensor in the midlle position
-    Serial.println(End of obstacle right);
+    servo.write(90);//reposition the sensor in the midlle position
+    Serial.println("End of obstacle right");
     Serial.println(marginright);
-    Serial.println(End of obstacle left);
+    Serial.println("End of obstacle left");
     Serial.println(marginleft);
 
-    if( marginright  160 && marginleft  160 ){
+    if( marginright > 160 && marginleft > 160 ){
        turnright();
        turnright();
     }
-    else if(marginright  marginleft){
+    else if(marginright > marginleft){
       
       turnright();
       forward();
-      if the distance to left is smaller we will turn left and then go straight
-      check_right();check if went past the object
+      //if the distance to left is smaller we will turn left and then go straight
+   //   check_right();//check if went past the object
        
     }
     else{
       turnleft(); 
       forward();
-      if the distance to left is smaller we will turn right and then go straight
-      check_left();check if went past the object
+      //if the distance to left is smaller we will turn right and then go straight
+     // check_left();//check if went past the object
     }
     
 }
- scanare
+/////////////////////////////// scanare
 
 void backward(){
 
@@ -142,7 +142,7 @@ void backward(){
     analogWrite(motorPin3, 0);
     analogWrite(motorPin4, 100);
 }
- backward
+/////////////////////////////// backward
 
 void forward(){
    analogWrite(motorPin1, 104l);
@@ -153,13 +153,13 @@ void forward(){
     
 }
 
-  forward
+ /////////////////////////////// forward
 
 void turnleft(){
       
       
-     while((distance1)or(distance32)){   do this loop as long as we didnt exceed the object
-       Clears the trigPin
+     while((distance<1)or(distance>32)){   //do this loop as long as we didnt exceed the object
+      // Clears the trigPin
        analogWrite(motorPin1,65);
       analogWrite(motorPin2, 0);
       analogWrite(motorPin3, 0);
@@ -168,112 +168,112 @@ void turnleft(){
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
 
-       Sets the trigPin on HIGH state for 10 micro seconds
+      // Sets the trigPin on HIGH state for 10 micro seconds
       digitalWrite(trigPin, HIGH);
       delayMicroseconds(10);
       digitalWrite(trigPin, LOW);
 
-       Reads the echoPin, returns the sound wave travel time in microseconds
+      // Reads the echoPin, returns the sound wave travel time in microseconds
       duration = pulseIn(echoPinright, HIGH);
-       Calculating the distance
-      distance= duration0.0342;
-       Prints the distance on the Serial Monitor
-      Serial.print(Distance left );
+      // Calculating the distance
+      distance= duration*0.034/2;
+      // Prints the distance on the Serial Monitor
+      Serial.print("Distance left: ");
       Serial.println(distance);
      }
    
     stopmotor();  
-    distance=0;reset te variable distance
+    distance=0;//reset te variable distance
         
     delay(2000);
 
     
  }
-  turn left
+ ////////////////////////////// turn left
   
 void turnright(){
    
          
-   while(distance1 or (distance32)){   do this loop as long as we didnt exceed the object
+   while(distance<1 or (distance>32)){   //do this loop as long as we didnt exceed the object
     analogWrite(motorPin1, 0);
    analogWrite(motorPin2, 65);
    analogWrite(motorPin3, 65);
    analogWrite(motorPin4, 0);
-       Clears the trigPin
+      // Clears the trigPin
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
 
-       Sets the trigPin on HIGH state for 10 micro seconds
+      // Sets the trigPin on HIGH state for 10 micro seconds
       digitalWrite(trigPin, HIGH);
       delayMicroseconds(10);
       digitalWrite(trigPin, LOW);
 
-       Reads the echoPin, returns the sound wave travel time in microseconds
+      // Reads the echoPin, returns the sound wave travel time in microseconds
       duration = pulseIn(echoPinleft, HIGH);
-       Calculating the distance
-      distance= duration0.0342;
-       Prints the distance on the Serial Monitor
-      Serial.print(Distance left );
+      // Calculating the distance
+      distance= duration*0.034/2;
+      // Prints the distance on the Serial Monitor
+      Serial.print("Distance left: ");
       Serial.println(distance);
      }
    
     stopmotor();  
-    distance=0;reset te variable distance
+    distance=0;//reset te variable distance
         
     delay(2000);
  }
- turn right
+/////////////////////////////// turn right
 
 void check_left(){
-    while(distance22){   do this loop as long as we didnt exceed the object
-       Clears the trigPin
+    while(distance<22){   //do this loop as long as we didnt exceed the object
+      // Clears the trigPin
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
 
-       Sets the trigPin on HIGH state for 10 micro seconds
+      // Sets the trigPin on HIGH state for 10 micro seconds
       digitalWrite(trigPin, HIGH);
       delayMicroseconds(10);
       digitalWrite(trigPin, LOW);
 
-       Reads the echoPin, returns the sound wave travel time in microseconds
+      // Reads the echoPin, returns the sound wave travel time in microseconds
       duration = pulseIn(echoPinleft, HIGH);
-       Calculating the distance
-      distance= duration0.0342;
-       Prints the distance on the Serial Monitor
-      Serial.print(Distance left );
+      // Calculating the distance
+      distance= duration*0.034/2;
+      // Prints the distance on the Serial Monitor
+      Serial.print("Distance left: ");
       Serial.println(distance);
     }
 
     stopmotor();
-    delay(2000);wait 2 sec
-    distance=0;reset te variable distance
+    delay(2000);//wait 2 sec
+    distance=0;//reset te variable distance
 }
- check left - check the left part after turning right
+////////////////////////////// check left - check the left part after turning right
 
 void check_right(){
-    while(distance22){ do this loop as long as we didnt exceed the object
-       Clears the trigPin
+    while(distance<22){ //do this loop as long as we didnt exceed the object
+      // Clears the trigPin
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
 
-       Sets the trigPin on HIGH state for 10 micro seconds
+      // Sets the trigPin on HIGH state for 10 micro seconds
       digitalWrite(trigPin, HIGH);
       delayMicroseconds(10);
       digitalWrite(trigPin, LOW);
 
-       Reads the echoPin, returns the sound wave travel time in microseconds
+      // Reads the echoPin, returns the sound wave travel time in microseconds
       duration = pulseIn(echoPinright, HIGH);
-       Calculating the distance
-      distance= duration0.0342;
-       Prints the distance on the Serial Monitor
-      Serial.print(Distance right );
+      // Calculating the distance
+      distance= duration*0.034/2;
+      // Prints the distance on the Serial Monitor
+      Serial.print("Distance right: ");
       Serial.println(distance);
    }
    stopmotor();
-   delay(2000);wait 2 sec 
-   distance=0;reset te variable distance
+   delay(2000);//wait 2 sec 
+   distance=0;//reset te variable distance
 }
- check right - check the right side after turning left
+////////////////////////////////// check right - check the right side after turning left
 
 void stopmotor(){
     analogWrite(motorPin1, 0);
@@ -282,4 +282,4 @@ void stopmotor(){
     analogWrite(motorPin4, 0);
     
 }
- stop motor
+///////////////////////////////// stop motor

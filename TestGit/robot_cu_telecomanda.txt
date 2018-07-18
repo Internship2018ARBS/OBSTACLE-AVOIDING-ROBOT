@@ -107,6 +107,8 @@ void setup() {
   pinMode(4,OUTPUT);      //for motor1
   pinMode(7,OUTPUT);      //for motor2
   pinMode(8,OUTPUT);      //for motor2
+  pinMode(A0,INPUT_PULLUP);
+  pinMode(A5,INPUT_PULLUP);
   
   irrecv.enableIRIn();   // REMOTE initializing pin
 
@@ -158,7 +160,7 @@ bool searchLeftandRight(int pin){
 void autonomousRoutine()
 {
   
-if(getDistance() <= 40){ //25 cm
+if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
         go(0,0);
         delay(500);
 

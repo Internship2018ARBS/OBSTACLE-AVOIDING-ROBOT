@@ -44,11 +44,41 @@ Servo srv;
 #define M3 13  // for motor2
 #define M4 4  // for motor2
 
+#define BUZZER_PIN A3
+
 #define GREEN_LED A2
 #define GREEN_LED_DELAY 1000
 bool GREEN_LED_STATE = true;
+bool BUZZER_STATE = false;
 unsigned long GREEN_LED_TIMER = 0;
+
+
+unsigned long BUZZER_TIMER = 0;
+unsigned long BUZZER_DELAY = 250;
 unsigned long currentMillis;
+
+void buzzer_buzz(){
+  if(BUZZER_DELAY != -1){
+    currentMillis = millis();
+    if(currentMillis - BUZZER_TIMER >= BUZZER_DELAY){
+     
+            if(BUZZER_STATE){
+                 digitalWrite(BUZZER_PIN , LOW);
+                 BUZZER_STATE = false;
+              
+            } else {
+              digitalWrite(BUZZER_PIN , HIGH);
+                BUZZER_STATE = true;
+              
+            }
+            BUZZER_TIMER = currentMillis;
+           
+      }
+    } else {
+      digitalWrite(BUZZER_PIN , LOW);
+    }
+
+}
 
 void blink_green_led(){
    currentMillis = millis();
@@ -148,6 +178,7 @@ void setup() {
   pinMode(8,OUTPUT);      //for motor2
   pinMode(A0,INPUT_PULLUP);
   pinMode(A5,INPUT_PULLUP);
+    pinMode(A3,OUTPUT);
   
   irrecv.enableIRIn();   // REMOTE initializing pin
 
@@ -175,6 +206,7 @@ int getDistance(){
 
 
 bool searchLeftandRight(int pin){
+   digitalWrite(A3 , LOW);
     srv.attach(pin);
     
     srv.write(0);
@@ -196,11 +228,13 @@ bool searchLeftandRight(int pin){
    return false;   //Trebuie mers in dreapta
 }
 
+unsigned long distance_from_obstacle;
+
 void autonomousRoutine()
 {
-  
-if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
-        analogWrite(GREEN_LED , 0);
+  distance_from_obstacle = getDistance();
+if(distance_from_obstacle <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
+       
         go(0,0);
         delay(500);
 
@@ -229,6 +263,8 @@ if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //2
          go(motor1_speed,motor2_speed);
    }
 }
+
+unsigned long x;
 
 void loop() {
 
@@ -346,5 +382,24 @@ void loop() {
   {
     autonomousRoutine();
     blink_green_led();
-  } 
+   
+  } else {
+    x = getDistance();
+        if(x < 80){
+          BUZZER_DELAY = 250;
+           buzzer_buzz();
+           
+        } else {
+          BUZZER_DELAY = -1;
+           buzzer_buzz();
+        }
+        if(x < 40){
+          go(0,0);
+          BUZZER_DELAY = -1;
+           buzzer_buzz();
+        }
+  }
+ 
+ 
+
 }

@@ -233,7 +233,7 @@ unsigned long distance_from_obstacle;
 void autonomousRoutine()
 {
   distance_from_obstacle = getDistance();
-if(distance_from_obstacle <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
+if(distance_from_obstacle <= 30 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
        
         go(0,0);
         delay(500);

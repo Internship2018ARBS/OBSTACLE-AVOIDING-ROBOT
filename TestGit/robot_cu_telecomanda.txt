@@ -72,13 +72,17 @@ void go(int spd1, int spd2)
        digitalWrite(8,HIGH);
        analogWrite(PWM1 , spd1);
        analogWrite(PWM2 , spd2);
-    } else {
+    } 
+    else
+    {
       digitalWrite(7,HIGH);
       digitalWrite(8,LOW);
       analogWrite(PWM1 , spd1);
       analogWrite(PWM2 , -spd2);
     }
-  } else {
+  } 
+  else 
+  {
       digitalWrite(13,HIGH);
       digitalWrite(4,LOW);
       if(spd2>=0)
@@ -87,7 +91,9 @@ void go(int spd1, int spd2)
          digitalWrite(8,HIGH);
          analogWrite(PWM1 , -spd1);
          analogWrite(PWM2 , spd2);
-      } else {
+      }
+      else 
+      {
          digitalWrite(7,HIGH);
          digitalWrite(8,LOW);
          analogWrite(PWM1 , -spd1);
@@ -172,7 +178,9 @@ if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //2
             delay(400);
             go(0,0);
             delay(400);
-        } else {
+        }
+        else 
+        {
           //Trebuie sa se intoarca spre dreapta
           // Serial.println("==== DREAPTA =====");
           go(motor1_speed,-motor2_speed);
@@ -180,7 +188,9 @@ if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //2
           go(0,0);
           delay(600);
         }
-   } else {
+   } 
+   else
+   {
         //Merge in fata pana intalneste obstacol
          go(motor1_speed,motor2_speed);
    }
@@ -188,30 +198,46 @@ if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //2
 
 void loop() {
 
- if (irrecv.decode(&results)){
+ if (irrecv.decode(&results))
+ {
  // Serial.println(results.value, HEX);
-        if(autonomous){
-            if(results.value == 0xFF30CF){
+        if(autonomous)
+        {
+            if(results.value == 0xFF30CF)
+            {
                 autonomous = false;
             } 
-       } else {
-            if(results.value == 0xFF7A85){
+       } 
+       else 
+       {
+            if(results.value == 0xFF7A85)
+            {
               autonomous = true;
-            } else {
-                if (results.value == 0XFFFFFFFF){
+            } 
+            else 
+            {
+                if (results.value == 0XFFFFFFFF)
+                {
                   // Serial.println("do the same");
-                  if(key_value == 0xFF18E7){
+                  if(key_value == 0xFF18E7)
+                  {
                     go(motor1_speed,motor2_speed);
                     delay(300);                    
-                  } else {
-                    if(key_value ==0xFF4AB5 ){
+                  }
+                  else 
+                  {
+                    if(key_value == 0xFF4AB5 )
+                    {
                             go(-motor1_speed, -motor2_speed);
                             delay(300);
                     }
 
                  }
-              } else {
-                         switch(results.value){
+              } 
+              else
+              {
+                         switch(results.value)
+                         {
                                                         
                                                         case 0xFF18E7:
                                                                         {
@@ -267,13 +293,17 @@ void loop() {
 
     
      irrecv.resume(); 
-  } else {
-        if(!autonomous) {
+  } 
+  else 
+  {
+        if(!autonomous)
+        {
             go(0,0);
         }
     }
   
-  if(autonomous){
+  if(autonomous)
+  {
     autonomousRoutine();
   }
 }

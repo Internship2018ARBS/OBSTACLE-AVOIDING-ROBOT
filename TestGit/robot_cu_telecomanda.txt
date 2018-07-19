@@ -216,7 +216,7 @@ void loop() {
             } 
             else 
             {
-                if (results.value == 0XFFFFFFFF)
+               /* if (results.value == 0XFFFFFFFF)
                 {
                   // Serial.println("do the same");
                   if(key_value == 0xFF18E7)
@@ -233,8 +233,8 @@ void loop() {
                     }
 
                  }
-              } 
-              else
+            } */
+           //   else
               {
                          switch(results.value)
                          {
@@ -243,7 +243,7 @@ void loop() {
                                                                         {
                                                                        // Serial.println("2");
                                                                           go(motor1_speed,motor2_speed);
-                                                                          delay(500);
+                                                                         // delay(500);
                                                                         // Serial.println("forward");
                                                                         break ;
                                                                         }
@@ -269,6 +269,7 @@ void loop() {
                                                                         //   Serial.println("right");
                                                                         go(motor1_speed, -motor2_speed);
                                                                         delay(500);
+                                                                        go(0,0);
                                                                         break ;
                                                                         }
                                                           case 0xFF4AB5:
@@ -298,7 +299,7 @@ void loop() {
   {
         if(!autonomous)
         {
-            go(0,0);
+          //  go(0,0);
         }
     }
   

@@ -259,10 +259,11 @@ void autonomousRoutine()
            
             go(0,0);
             delay(500);
+            // 0 dreapta 1 stanga 2 stanga_135 3 dreapta_45
           rotation_degrees =  searchLeftandRight(SERVO_PIN);
             if(rotation_degrees == 0)
             {
-              //Trebuie sa se intoarca spre stanga
+               //Trebuie sa se intoarca spre stanga
                // Serial.println("==== STANGA =====");
                 go(-motor1_speed,motor2_speed);
                 delay(400);
@@ -271,18 +272,25 @@ void autonomousRoutine()
             }
             else if(rotation_degrees == 1)
             {
-              //Trebuie sa se intoarca spre dreapta
+            
+              
+                 //Trebuie sa se intoarca spre dreapta
               // Serial.println("==== DREAPTA =====");
               go(motor1_speed,-motor2_speed);
               delay(600);
               go(0,0);
               delay(600);
             } else if (rotation_degrees == 2){
+              //Trebuie sa se intoarca spre dreapta
+              // Serial.println("==== DREAPTA =====");
               go(motor1_speed,-motor2_speed);
               delay(300);
               go(0,0);
               delay(300);
             } else {
+              
+               //Trebuie sa se intoarca spre stanga
+               // Serial.println("==== STANGA =====");
                 go(-motor1_speed,motor2_speed);
                 delay(200);
                 go(0,0);

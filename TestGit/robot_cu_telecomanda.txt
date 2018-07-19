@@ -44,6 +44,39 @@ Servo srv;
 #define M3 13  // for motor2
 #define M4 4  // for motor2
 
+#define GREEN_LED A2
+#define GREEN_LED_DELAY 1000
+bool GREEN_LED_STATE = true;
+unsigned long GREEN_LED_TIMER = 0;
+unsigned long currentMillis;
+
+void blink_green_led(){
+   currentMillis = millis();
+  if(currentMillis - GREEN_LED_TIMER >= GREEN_LED_DELAY){
+   
+          if(GREEN_LED_STATE){
+               GREEN_LED_STATE = false;
+            
+          } else {
+            GREEN_LED_STATE = true;
+            
+            
+          }
+          GREEN_LED_TIMER = currentMillis;
+         
+    }
+
+    if(GREEN_LED_STATE){
+         {
+              analogWrite(GREEN_LED , 255);
+             
+         }
+    } else {
+        analogWrite(GREEN_LED , 0);
+       
+    } 
+}
+
 #define SERVO_PIN 3
 
 // pentru sonar getDistance()
@@ -167,6 +200,7 @@ void autonomousRoutine()
 {
   
 if(getDistance() <= 40 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
+        analogWrite(GREEN_LED , 0);
         go(0,0);
         delay(500);
 
@@ -206,6 +240,8 @@ void loop() {
             if(results.value == 0xFF30CF)
             {
                 autonomous = false;
+                GREEN_LED_STATE = false;
+                analogWrite(GREEN_LED , 0);
             } 
        } 
        else 
@@ -302,9 +338,13 @@ void loop() {
           //  go(0,0);
         }
     }
+
+
+    
   
   if(autonomous)
   {
     autonomousRoutine();
-  }
+    blink_green_led();
+  } 
 }

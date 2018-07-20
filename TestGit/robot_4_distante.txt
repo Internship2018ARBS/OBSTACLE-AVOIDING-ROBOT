@@ -57,6 +57,19 @@ unsigned long BUZZER_TIMER = 0;
 unsigned long BUZZER_DELAY = 250;
 unsigned long currentMillis;
 
+int clock= A1;//IC pin 11 (yellow)
+int latch=11;//IC pin 12 (green) 
+int data=A4;//IC pin 14 (blue)
+byte pattern[]=
+{  
+B00000010,   
+B00000110,  
+B00001110,
+B00011110, 
+B00111110,
+B01111110,  
+}; 
+
 void buzzer_buzz(){
   if(BUZZER_DELAY != -1){
     currentMillis = millis();
@@ -178,7 +191,10 @@ void setup() {
   pinMode(8,OUTPUT);      //for motor2
   pinMode(A0,INPUT_PULLUP);
   pinMode(A5,INPUT_PULLUP);
-    pinMode(A3,OUTPUT);
+  pinMode(A3,OUTPUT);
+  pinMode(clock,OUTPUT);   
+  pinMode(latch,OUTPUT);   
+  pinMode(data,OUTPUT); 
   
   irrecv.enableIRIn();   // REMOTE initializing pin
 
@@ -190,7 +206,12 @@ void setup() {
 
 }
 
-
+void lights(int i)
+{
+  digitalWrite(latch,LOW);   
+  shiftOut(data,clock,MSBFIRST,pattern[i]);
+  digitalWrite(latch,HIGH);   
+}
 
 int getDistance(){
   digitalWrite(TRIG_PIN , LOW);
@@ -255,6 +276,12 @@ int rotation_degrees;
 void autonomousRoutine()
 {
       distance_from_obstacle = getDistance();
+      if(distance_from_obstacle > 100)lights(0);
+      if(distance_from_obstacle > 80 && distance_from_obstacle <= 100)lights(1);
+      if(distance_from_obstacle > 60 && distance_from_obstacle <= 80)lights(2);
+      if(distance_from_obstacle > 45 && distance_from_obstacle <= 60)lights(3);
+      if(distance_from_obstacle > 37 && distance_from_obstacle <= 45)lights(4);
+      if(distance_from_obstacle > 30 && distance_from_obstacle <= 37)lights(5);
     if(distance_from_obstacle <= 30 || digitalRead(A0) == LOW || digitalRead(A5) == LOW){ //25 cm
            
             go(0,0);

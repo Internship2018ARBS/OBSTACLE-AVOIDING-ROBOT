@@ -225,7 +225,7 @@ void turnright(){
 /////////////////////////////// turn right
 
 void check_left(){
-    while(distance<22){   //do this loop as long as we didnt exceed the object
+    while(distance<33){   //do this loop as long as we didnt exceed the object
       // Clears the trigPin
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);
@@ -251,7 +251,7 @@ void check_left(){
 ////////////////////////////// check left - check the left part after turning right
 
 void check_right(){
-    while(distance<22){ //do this loop as long as we didnt exceed the object
+    while(distance<33){ //do this loop as long as we didnt exceed the object
       // Clears the trigPin
       digitalWrite(trigPin, LOW);
       delayMicroseconds(2);

@@ -1,0 +1,358 @@
+#include <Servo.h>
+Servo servo;
+long previousMillis = 0;
+long interval = 3000;
+long durationleft,durationright;//ultrasonic sensor
+int marginleft,marginright; //sensor angles
+int distance=0;//ultrasonic sensor
+int distancesensorleft,distancesensorright;
+
+
+//Motor A
+const int motorPin1  =11;  // Pin 14 of L293
+const int motorPin2  = 10;  // Pin 10 of L293
+//Motor B
+const int motorPin3  = 6; // Pin  7 of L293
+const int motorPin4  = 5;  // Pin  2 of L293
+
+const int trigPin = 7;// defines variables ultrasonic sensor
+const int echoPinleft = 12;// defines variables ultrasonic sensor
+const int echoPinright = 13;// defines variables ultrasonic sensor
+
+boolean blue = true;
+char junk;
+String inputString="";
+
+void setup(){
+    Serial.begin(9600); //Start serial communication boud rate at 9600
+    pinMode(2,INPUT); //Pin 2 as signal input for sensor
+  
+    //Set pins as outputs for motor
+    pinMode(motorPin1, OUTPUT);
+    pinMode(motorPin2, OUTPUT);
+    pinMode(motorPin3, OUTPUT);
+    pinMode(motorPin4, OUTPUT);
+  
+    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+    pinMode(echoPinleft, INPUT); // Sets the echoPin as an Input for left sensor
+    pinMode(echoPinright, INPUT); // Sets the echoPin as an Input for right sensor
+ 
+    servo.attach(4);//pin for servomotor
+    servo.write(90);//angle for servomotor
+    delay(1000);
+} //////////// SETUP
+
+void loop(){
+
+      if ( blue == true )
+      {
+        Serial.println("Bluetooth");
+        bluetoothModule();
+      }
+      else{
+        Serial.println("Autonom");
+        if(Serial.available()){
+            while(Serial.available())
+            {
+                char inChar = (char)Serial.read(); //read the input
+                inputString += inChar;        //make a string of the characters coming on serial
+            }
+        Serial.println(inputString);
+        while (Serial.available() > 0)  
+        {
+            junk = Serial.read(); 
+        }  // clear the serial buffer
+
+        if(inputString == "x"){
+            blue = !blue;
+        }
+        
+        inputString = "";
+        }
+
+        delay(50);
+        forward();
+
+
+
+   
+         unsigned long currentMillis = millis();//save the current time
+      if(currentMillis - previousMillis >= interval) {//if 2 seconds have passsed check the surrounding
+        slowdown();
+        servo.write(90);
+         for(int i=70;i<=110;i+=4){
+      Serial.println("Position: ");
+      Serial.println(i);
+      servo.write(i);
+      delay(55);
+      if(digitalRead(2)==LOW)  { //pin 2 for sensor
+          if((i-90)>0){
+            stopmotor();
+            delay(10);
+            turnright();
+          }
+            else{
+                 stopmotor();
+            delay(10);
+              turnleft();
+            }
+         }
+      }
+        previousMillis = currentMillis; //the current time becomes the previous in order to have 2 seconds fo every loop
+        forward();
+        
+      }
+      else{
+      delay(100);
+      
+   checkdistanceright();
+   checkdistanceleft();
+ 
+    adaptdirection();
+      }
+    }
+}
+
+void bluetoothModule(){
+    if(Serial.available()){
+        while(Serial.available())
+        {
+            char inChar = (char)Serial.read(); //read the input
+            inputString += inChar;        //make a string of the characters coming on serial
+        }
+        Serial.println(inputString);
+        while (Serial.available() > 0)  
+        { 
+            junk = Serial.read(); 
+        }  // clear the serial buffer
+
+        delay(50);
+        if(inputString == "x"){
+            blue = !blue;        // in case of 'x' change the mode
+         }
+      
+        else if(inputString == "f"){         //in case of 'f' go forward
+            // forward
+            stopmotor();
+            delay(20);
+            forward();
+          }
+        else if(inputString == "r"){        // in case of 'r' go right
+            // right
+            turnright();
+        }
+    
+        else if(inputString == "l"){        // in case of 'l' go left
+            // left
+            turnleft();     
+        }
+    
+        else if(inputString == "s"){        // in case of 's' stop
+            stopmotor();
+        }
+
+        else if(inputString == "b"){        // in case of 'b' go backward
+            stopmotor();
+            delay(20);
+            backward();
+        }
+    
+        inputString = "";
+  }
+}  // bluetoothModule
+
+void stopmotor(){
+    analogWrite(motorPin1, 0);
+    analogWrite(motorPin2, 0);
+    analogWrite(motorPin3, 0);
+    analogWrite(motorPin4, 0);
+    
+}
+///////////////////////////////// stop motor
+
+
+void forward(){
+   analogWrite(motorPin1, 65);
+   analogWrite(motorPin2, 0);
+   analogWrite(motorPin3, 65);
+   analogWrite(motorPin4, 0);
+    
+}
+
+void checkdistanceleft(){
+        // Sets the trigPin on HIGH state for 10 micro seconds
+      digitalWrite(trigPin, HIGH);
+      delayMicroseconds(10);
+      digitalWrite(trigPin, LOW);
+
+      // Reads the echoPin, returns the sound wave travel time in microseconds
+      durationleft = pulseIn(echoPinleft, HIGH);
+      // Calculating the distance
+      distancesensorleft= durationleft*0.034/2;
+         delay(10);
+      // Prints the distance on the Serial Monitor
+      Serial.print("Distance left: ");
+      Serial.println(distancesensorleft);
+       
+      
+}
+void checkdistanceright(){
+     // Sets the trigPin on HIGH state for 10 micro seconds
+      digitalWrite(trigPin, HIGH);
+      delayMicroseconds(10);
+      digitalWrite(trigPin, LOW);
+
+      // Reads the echoPin, returns the sound wave travel time in microseconds
+      durationright = pulseIn(echoPinright, HIGH);
+      // Calculating the distance
+      distancesensorright= durationright*0.034/2;
+         delay(10);
+      // Prints the distance on the Serial Monitor
+      Serial.print("                       Distance right: ");
+      Serial.println(distancesensorright);
+   
+
+}
+void adaptdirection(){
+    if( (distancesensorright<25 || distancesensorleft<25) && (distancesensorright>10 || distancesensorleft>10) ){
+    if( distancesensorright > distancesensorleft ){
+        slowdown();
+        delay(10);
+        turnright();
+       // slowdown();
+        delay(20);
+    }
+    else{
+        slowdown();
+        delay(10);
+        turnleft();  
+        //slowdown();
+        delay(20);
+    }
+    }
+    if((distancesensorright<10|| distancesensorleft<10) && (distancesensorright>5|| distancesensorleft>5)){
+        if(distancesensorright>distancesensorleft){
+            slowdown();
+            delay(10);
+            turnrighttotal();
+            //slowdown();
+            delay(20);
+    }
+    else{
+        slowdown();
+        delay(10);
+        turnlefttotal();  
+        //slowdown();
+        delay(20);
+    }
+    }
+    if(distancesensorright<5 && distancesensorleft<5){
+      delay(10);
+      backward();
+    
+      
+    }
+
+}
+
+void turnleft(){
+   analogWrite(motorPin1,0);
+   analogWrite(motorPin2, 0);
+   analogWrite(motorPin3, 115);
+   analogWrite(motorPin4, 0);
+   delay(300);
+  
+}
+
+void turnright(){
+   analogWrite(motorPin1, 0);
+   analogWrite(motorPin2, 0);
+   analogWrite(motorPin3, 0);
+   analogWrite(motorPin4, 115);
+   delay(300);
+
+}
+/////////////
+void turnlefttotal(){
+   analogWrite(motorPin1,0);
+   analogWrite(motorPin2, 115);
+   analogWrite(motorPin3, 0);
+   analogWrite(motorPin4, 0);
+   delay(300);
+  
+}
+
+void turnrighttotal(){
+   analogWrite(motorPin1, 0);
+   analogWrite(motorPin2, 0);
+   analogWrite(motorPin3, 0);
+   analogWrite(motorPin4, 115);
+   delay(300);
+
+}
+/////////
+void backward(){
+     analogWrite(motorPin1, 0);
+   analogWrite(motorPin2, 85);
+   analogWrite(motorPin3, 0);
+   analogWrite(motorPin4, 85);
+   delay(350);
+  
+}
+
+/////////////
+
+void slowdown(){
+  analogWrite(motorPin1, 30);
+   analogWrite(motorPin2, 0);
+   analogWrite(motorPin3, 30);
+   analogWrite(motorPin4, 0);
+  
+}
+void checkdistance(){
+   delay(200);
+
+    //loop for finding the position where the marginleft of the object is by searching form the middle of the car to the left
+    for(int i=92;i<110;i+=2){
+      Serial.println("Position: ");
+      Serial.println(i);
+      servo.write(i);
+      delay(55);
+  
+      if(digitalRead(2)==LOW){
+        marginleft=i-90;//found the position and store it in a variable
+        i=180;//end the loop if we found where the obstacle ends     
+      }
+    } /// scan the right part of the object
+
+    delay(100);
+  
+    //loop for finding the position where the marginright of the object is by searching form the middle of the car to the left
+    for(int i=98;i>70;i-=2){
+      Serial.println("Position: ");
+      Serial.println(i);
+      servo.write(i);
+      delay(55);
+    
+      if(digitalRead(2)==LOW){
+        marginright=90-i;//found the position and store it in a variable
+        i=0;//end the loop if we found where the obstacle ends
+      }
+    } /// scan the left part of the object
+    servo.write(90);
+    if(marginright>marginleft){
+       slowdown();
+      delay(100);
+      turnleft();
+        slowdown();
+           delay(50);
+      
+    }
+     else{
+       slowdown();
+      delay(100);
+      turnright();  
+       slowdown();
+        delay(50);
+    }
+}

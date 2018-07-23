@@ -1,0 +1,466 @@
+#include <Servo.h>
+#include <stdlib.h>
+#include <IRremote.h>
+
+// BUTTONS FOR REMOTE
+/*
+PWR       FF629D     
+CH          FFE21D        
+|<<          FF22DD  
+>|            FFC23D              
+>>|          FF02FD               
+-             FFE01F 
+Plus        FFA857         
+EQ          FF906F          
+0             FF6897            
+100         FF9867           
+200         FFB04F           
+1             FF30CF                 
+2             FF18E7                 
+3             FF7A85                  
+4             FF10EF                   
+5             FF38C7                    
+6             FF5AA5                  
+7             FF42BD                  
+8             FF4AB5             
+9             FF52AD 
+dublura      FFFFFFFF
+*/
+
+#define RECV_PIN 2         // receiver pin for remote
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+unsigned long key_value = 0;
+volatile bool autonomous=true;           // robot state
+
+Servo srv;
+
+#define TRIG_PIN 12
+#define ECHO_PIN 10
+#define PWM1 5   // for motor1
+#define PWM2 6  // for motor2
+#define M1 7  // for motor1
+#define M2 8  // for motor1
+#define M3 13  // for motor2
+#define M4 4  // for motor2
+#define IR_SENSOR_1 A0
+#define IR_SENSOR_2 A5
+
+#define BUZZER_PIN A3
+
+#define GREEN_LED A2
+#define GREEN_LED_DELAY 250
+bool GREEN_LED_STATE = true;
+bool BUZZER_STATE = false;
+unsigned long GREEN_LED_TIMER = 0;
+
+
+
+
+unsigned long BUZZER_TIMER = 0;
+unsigned long BUZZER_DELAY = 250;
+unsigned long currentMillis;
+
+
+
+int clock= A1;//IC pin 11 (yellow)
+int latch=11;//IC pin 12 (green) 
+int data=A4;//IC pin 14 (blue)
+byte pattern[]=
+{  
+B00000010,   
+B00000110,  
+B00001110,
+B00011110, 
+B00111110,
+B01111110,  
+}; 
+
+void lights(int i)
+{
+  digitalWrite(latch,LOW);   
+  shiftOut(data,clock,MSBFIRST,pattern[i]);
+  digitalWrite(latch,HIGH);   
+}
+
+void buzzer_buzz()
+{
+  if(BUZZER_DELAY != -99999)
+  {
+    currentMillis = millis();
+    if(currentMillis - BUZZER_TIMER >= BUZZER_DELAY)
+    {
+            if(BUZZER_STATE)
+            {
+                 digitalWrite(BUZZER_PIN , LOW);
+                 BUZZER_STATE = false;
+            }
+            else
+            {
+              digitalWrite(BUZZER_PIN , HIGH);
+                BUZZER_STATE = true;
+            }
+            BUZZER_TIMER = currentMillis;
+      }
+    } 
+    else 
+    {
+      digitalWrite(BUZZER_PIN , LOW);
+    }
+}
+
+void blink_green_led()
+{
+  currentMillis = millis();
+  if(currentMillis - GREEN_LED_TIMER >= GREEN_LED_DELAY)
+  {
+          if(GREEN_LED_STATE)
+          {
+            analogWrite(GREEN_LED , 255);
+            GREEN_LED_STATE = false;
+          } 
+          else
+          {
+            GREEN_LED_STATE = true;
+            analogWrite(GREEN_LED , 0);
+          }
+          GREEN_LED_TIMER = currentMillis;
+    }
+}
+
+#define SERVO_PIN 3
+
+// pentru sonar getDistance()
+
+long duration;
+int distance;
+
+
+
+// pentru servo searchLeftandRight(const int pin)
+unsigned int  dreapta , stanga , stanga_135 , dreapta_45;
+
+
+//motor speeds
+const short  motor1_speed = 120;
+const short motor2_speed = 100;
+
+void go(const short spd1, const short spd2)
+{
+  if(spd1>=0)
+  {
+    digitalWrite(13,LOW);
+    digitalWrite(4,HIGH);
+    if(spd2>=0)
+    {
+       digitalWrite(7,LOW);
+       digitalWrite(8,HIGH);
+       analogWrite(PWM1 , spd1);
+       analogWrite(PWM2 , spd2);
+    } 
+    else
+    {
+      digitalWrite(7,HIGH);
+      digitalWrite(8,LOW);
+      analogWrite(PWM1 , spd1);
+      analogWrite(PWM2 , -spd2);
+    }
+  } 
+  else 
+  {
+      digitalWrite(13,HIGH);
+      digitalWrite(4,LOW);
+      if(spd2>=0)
+      {
+         digitalWrite(7,LOW);
+         digitalWrite(8,HIGH);
+         analogWrite(PWM1 , -spd1);
+         analogWrite(PWM2 , spd2);
+      }
+      else 
+      {
+         digitalWrite(7,HIGH);
+         digitalWrite(8,LOW);
+         analogWrite(PWM1 , -spd1);
+         analogWrite(PWM2 , -spd2);
+      }
+    }
+  }
+
+
+void setup()
+{
+  pinMode(TRIG_PIN , OUTPUT);
+  pinMode(ECHO_PIN , INPUT);
+  pinMode(PWM1,OUTPUT);      //pwm motor1
+  pinMode(PWM2,OUTPUT);      //pwm motor2
+  pinMode(M1,OUTPUT);            //for motor1
+  pinMode(M2,OUTPUT);      //for motor1
+  pinMode(M3,OUTPUT);      //for motor2
+  pinMode(M4,OUTPUT);      //for motor2
+  pinMode(IR_SENSOR_1,INPUT_PULLUP);
+  pinMode(IR_SENSOR_2,INPUT_PULLUP);
+  pinMode(BUZZER_PIN,OUTPUT);
+  pinMode(clock,OUTPUT);   
+  pinMode(latch,OUTPUT);   
+  pinMode(data,OUTPUT); 
+  
+  irrecv.enableIRIn();   // REMOTE initializing pin
+
+  srv.attach(SERVO_PIN);
+  srv.write(85);
+  srv.detach();
+  delay(500);
+
+ // Serial.begin(9600);
+
+}
+
+
+
+int getDistance()
+{
+  digitalWrite(TRIG_PIN , LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN , HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN , LOW);
+  duration = pulseIn(ECHO_PIN , HIGH);
+  distance = duration * 0.034 / 2;
+  return distance;
+}
+
+
+
+byte  searchLeftandRight(int pin
+{
+    digitalWrite(BUZZER_PIN , LOW);
+    srv.attach(pin);
+    
+    srv.write(0);
+    delay(350);
+    dreapta = getDistance();
+    
+
+    
+    srv.write(45);
+    delay(350);
+    dreapta_45 = getDistance();
+    
+    
+    srv.write(135);
+    delay(350);
+    stanga_135 = getDistance();
+    
+    
+    srv.write(180);
+    delay(350);  
+    stanga = getDistance();
+     
+
+   // revine la pozitia initiala
+    srv.write(85);
+    delay(350);
+    
+    srv.detach();
+
+     if(stanga_135 >= dreapta_45 && stanga_135 >= stanga && stanga_135 >= dreapta)
+     {
+       // Serial.print("Stanga_135 : ");
+       // Serial.print(stanga_135);
+       // Serial.println(" 2");
+          return 2;
+      }
+
+       if(dreapta_45 >= stanga_135 && dreapta_45 >= stanga && dreapta_45 >= dreapta)
+       {
+       // Serial.print("dreapta 45 : ");
+       // Serial.print(dreapta_45);
+       // Serial.println(" 3");
+          return 3;
+      }
+
+      if(dreapta >= dreapta_45 && dreapta >= stanga_135 && dreapta >= stanga)
+      {
+      //  Serial.print("Dreapta : ");
+       //  Serial.print(dreapta);
+      //  Serial.println("  0");
+          return 0;
+      }
+
+      if(stanga >= dreapta_45 && stanga >= stanga_135 && stanga >= dreapta)
+      {
+      // Serial.print("Stanga : ");
+      // Serial.print(stanga);
+      // Serial.println(" 1");
+          return 1;
+      }
+}
+
+unsigned long distance_from_obstacle;
+byte rotation_degrees;
+void autonomousRoutine()
+{
+      distance_from_obstacle = getDistance();
+    
+     if(distance_from_obstacle > 100)
+              lights(0);
+      else if(distance_from_obstacle > 80 && distance_from_obstacle <= 100)
+              lights(1);
+      else if(distance_from_obstacle > 60 && distance_from_obstacle <= 80)
+              lights(2);
+      else if(distance_from_obstacle > 45 && distance_from_obstacle <= 60)
+              lights(3);
+      else if(distance_from_obstacle > 37 && distance_from_obstacle <= 45)
+              lights(4);
+      else if(distance_from_obstacle <= 37)
+              lights(5);
+      
+    if(distance_from_obstacle <= 20 || digitalRead(IR_SENSOR_1) == LOW || digitalRead(IR_SENSOR_2) == LOW)
+    { //25 cm
+           digitalWrite(GREEN_LED , LOW);
+            go(0,0);
+            delay(500);
+            // 0 dreapta 1 stanga 2 stanga_135 3 dreapta_45
+          rotation_degrees =  searchLeftandRight(SERVO_PIN);
+            if(rotation_degrees == 0)
+            {
+              //Trebuie sa se intoarca spre dreapta
+              // Serial.println("==== DREAPTA =====");
+              go(motor1_speed,-motor2_speed);
+              delay(500);
+              go(0,0);
+              delay(500);
+              
+            }
+            else if(rotation_degrees == 1)
+            {
+             //TREBUIE SA MEARGA IN STANGA
+              go(-motor1_speed,motor2_speed);
+              delay(500);
+              go(0,0);
+              delay(500);
+              
+                 
+            } 
+            else 
+            if (rotation_degrees == 2)
+            {
+             //STANGA 135
+              go(-motor1_speed,motor2_speed);
+              delay(250);
+              go(0,0);
+              delay(250);
+            }
+            else 
+            {
+               //DREAPTA 45
+                go(motor1_speed,-motor2_speed);
+                delay(250);
+                go(0,0);
+                delay(250);
+            }
+       } 
+       else
+       {
+            //Merge in fata pana intalneste obstacol
+             go(motor1_speed,motor2_speed);
+       }
+}
+
+void loop() {
+
+ if (irrecv.decode(&results))
+ {
+ // Serial.println(results.value, HEX);
+        if(autonomous)
+        {
+            if(results.value == 0xFF30CF)
+            {
+                autonomous = false;
+                GREEN_LED_STATE = false;
+                analogWrite(GREEN_LED , 0);
+            } 
+       } 
+       else 
+       {
+            if(results.value == 0xFF7A85)
+            {
+              autonomous = true;
+            } 
+            else 
+            {
+              switch(results.value)
+                         {
+                                                        case 0xFF18E7:
+                                                                        {
+                                                                       // Serial.println("2");
+                                                                          go(motor1_speed,motor2_speed);
+                                                                         // delay(500);
+                                                                        // Serial.println("forward");
+                                                                        break ;
+                                                                        }
+                                                        case 0xFF10EF:
+                                                                      {
+                                                                      //Serial.println("4");
+                                                                     // Serial.println("left");
+                                                                      go(-motor1_speed, motor2_speed);
+                                                                      delay(500);
+                                                                      go(0,0);
+                                                                      break ;
+                                                                      }
+                                                        case 0xFF38C7:
+                                                                        {
+                                                                       // Serial.println("5");
+                                                                       //    Serial.println("stop");
+                                                                        go(0,0);
+                                                                        break ;
+                                                                        }
+                                                          case 0xFF5AA5:
+                                                                        {
+                                                                        //Serial.println("6");
+                                                                        //   Serial.println("right");
+                                                                        go(motor1_speed, -motor2_speed);
+                                                                        delay(500);
+                                                                        go(0,0);
+                                                                        break ;
+                                                                        }
+                                                          case 0xFF4AB5:
+                                                                        {
+                                                                       // Serial.println("8");
+                                                                        go(-motor1_speed, -motor2_speed);
+                                                                        //Serial.println("backwards");
+                                                                        break ;
+                                                                        }
+                          }
+                          key_value = results.value;
+              }
+       }
+     irrecv.resume(); 
+  } 
+  
+  if(autonomous)
+  {
+    autonomousRoutine();
+    blink_green_led();
+   
+  } 
+  else
+  {
+    distance_from_obstacle = getDistance();
+        if(distance_from_obstacle < 80)
+        {
+             BUZZER_DELAY = 250;
+             buzzer_buzz();
+             if(distance_from_obstacle < 40)
+             {
+              go(0,0);
+             }
+        } 
+        else 
+        {
+          BUZZER_DELAY = -99999;
+           buzzer_buzz();
+        }
+  }
+}

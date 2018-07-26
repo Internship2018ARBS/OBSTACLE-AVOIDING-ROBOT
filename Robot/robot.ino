@@ -1,20 +1,22 @@
 #include <Servo.h>
 #include <stdlib.h>
-#include <IRremote.h>
+#include <IRremote.h>                 // Library used together with the remote and the ky-022 infrared receiver module
 
-// BUTTONS FOR REMOTE
-/*
-PWR       FF629D     
-CH          FFE21D        
-|<<          FF22DD  
+/* 
+ *  CODES RECEIVED WHEN PRESSING CERTAIN KEYS ON THE REMOTE
+key           code
+
+PWR           FF629D     
+CH            FFE21D        
+|<<           FF22DD  
 >|            FFC23D              
->>|          FF02FD               
+>>|           FF02FD               
 -             FFE01F 
-Plus        FFA857         
-EQ          FF906F          
+Plus          FFA857         
+EQ            FF906F          
 0             FF6897            
-100         FF9867           
-200         FFB04F           
+100           FF9867           
+200           FFB04F           
 1             FF30CF                 
 2             FF18E7                 
 3             FF7A85                  
@@ -24,25 +26,25 @@ EQ          FF906F
 7             FF42BD                  
 8             FF4AB5             
 9             FF52AD 
-dublura      FFFFFFFF
+doublePress       FFFFFFFF
 */
 
-#define RECV_PIN 2         // receiver pin for remote
-IRrecv irrecv(RECV_PIN);
-decode_results results;
-unsigned long key_value = 0;
-volatile bool autonomous=true;           // robot state
+#define RECV_PIN 2                     // Receiver pin for remote
+IRrecv irrecv(RECV_PIN);               // Initialising the IRrecv variable with the receive pin
+decode_results results;                // Initialise a variable for decoding the codes received from the remote
+unsigned long key_value = 0;           // The pressed key
+volatile bool autonomous=true;         // Robot state
 
 Servo srv;
 
 #define TRIG_PIN 12
 #define ECHO_PIN 10
-#define PWM1 5   // for motor1
-#define PWM2 6  // for motor2
-#define M1 7  // for motor1
-#define M2 8  // for motor1
-#define M3 13  // for motor2
-#define M4 4  // for motor2
+#define PWM1 5                         // for motor1
+#define PWM2 6                         // for motor2
+#define M1 7                           // for motor1
+#define M2 8                           // for motor1
+#define M3 13                          // for motor2
+#define M4 4                           // for motor2
 #define IR_SENSOR_1 A0
 #define IR_SENSOR_2 A5
 #define IR_SENSOR_3 9
@@ -64,9 +66,10 @@ unsigned long currentMillis;
 
 
 
-int clock= A1;//IC pin 11 (yellow)
-int latch=11;//IC pin 12 (green) 
-int data=A4;//IC pin 14 (blue)
+int clock= A1;                  //IC pin 11 (yellow)
+int latch=11;                   //IC pin 12 (green) 
+int data=A4;                    //IC pin 14 (blue)
+
 byte pattern[]=
 {  
 B00000010,   
@@ -84,27 +87,37 @@ void lights(int i)
   digitalWrite(latch,HIGH);   
 }
 
-void buzzer_buzz(){
-  if(BUZZER_DELAY != -99999){
+void buzzer_buzz()
+{
+  if(BUZZER_DELAY != -99999)
+  {
     currentMillis = millis();
-    if(currentMillis - BUZZER_TIMER >= BUZZER_DELAY){
-            if(BUZZER_STATE){
+    if(currentMillis - BUZZER_TIMER >= BUZZER_DELAY)
+    {
+            if(BUZZER_STATE)
+            {
                  digitalWrite(BUZZER_PIN , LOW);
                  BUZZER_STATE = false;
-            } else {
+            } 
+            else 
+            {
               digitalWrite(BUZZER_PIN , HIGH);
                 BUZZER_STATE = true;
             }
             BUZZER_TIMER = currentMillis;
       }
-    } else {
+    } 
+    else 
+    {
       digitalWrite(BUZZER_PIN , LOW);
     }
 }
 
-void blink_green_led(){
+void blink_green_led()
+{
   currentMillis = millis();
-  if(currentMillis - GREEN_LED_TIMER >= GREEN_LED_DELAY){
+  if(currentMillis - GREEN_LED_TIMER >= GREEN_LED_DELAY)
+  {
           if(GREEN_LED_STATE){
             analogWrite(GREEN_LED , 255);
             GREEN_LED_STATE = false;
@@ -125,16 +138,16 @@ int distance;
 
 
 
-// pentru servo searchLeftandRight(const int pin)
+// for servo searchLeftandRight(const int pin)
 unsigned int  dreapta , stanga , stanga_135 , dreapta_45;
 
 
 //motor speeds
-const short  motor1_speed = 120; //90
-const short motor2_speed = 100; // 70
+const short  motor1_speed = 120;            //90
+const short motor2_speed = 100;             //70
 
-const short  motor1_speed_turn = 120; //90
-const short motor2_speed_turn = 100; // 70
+const short  motor1_speed_turn = 120;       //90
+const short motor2_speed_turn = 100;        //70
 
 void go(const short spd1, const short spd2)
 {
@@ -179,15 +192,16 @@ void go(const short spd1, const short spd2)
   }
 
 
-void setup() {
+void setup() 
+{
   pinMode(TRIG_PIN , OUTPUT);
   pinMode(ECHO_PIN , INPUT);
-  pinMode(PWM1,OUTPUT);      //pwm motor1
-  pinMode(PWM2,OUTPUT);      //pwm motor2
-  pinMode(M1,OUTPUT);            //for motor1
-  pinMode(M2,OUTPUT);      //for motor1
-  pinMode(M3,OUTPUT);      //for motor2
-  pinMode(M4,OUTPUT);      //for motor2
+  pinMode(PWM1,OUTPUT);                 //pwm motor1
+  pinMode(PWM2,OUTPUT);                 //pwm motor2
+  pinMode(M1,OUTPUT);                   //for motor1
+  pinMode(M2,OUTPUT);                   //for motor1
+  pinMode(M3,OUTPUT);                   //for motor2
+  pinMode(M4,OUTPUT);                   //for motor2
   pinMode(IR_SENSOR_1,INPUT_PULLUP);
   pinMode(IR_SENSOR_2,INPUT_PULLUP);
   pinMode(BUZZER_PIN,OUTPUT);
@@ -196,7 +210,7 @@ void setup() {
   pinMode(data,OUTPUT); 
   pinMode(IR_SENSOR_3 , INPUT_PULLUP);
   
-  irrecv.enableIRIn();   // REMOTE initializing pin
+  irrecv.enableIRIn();                  // REMOTE initializing pin
 
   srv.attach(SERVO_PIN);
   srv.write(85);
@@ -209,7 +223,8 @@ void setup() {
 
 
 
-int getDistance(){
+int getDistance()
+{
   digitalWrite(TRIG_PIN , LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG_PIN , HIGH);
@@ -222,7 +237,8 @@ int getDistance(){
 
 
 
-byte  searchLeftandRight(int pin){
+byte  searchLeftandRight(int pin)
+{
     digitalWrite(BUZZER_PIN , LOW);
     srv.attach(pin);
     
@@ -247,80 +263,84 @@ byte  searchLeftandRight(int pin){
     stanga = getDistance();
      
 
-   // revine la pozitia initiala
     srv.write(85);
     delay(350);
     
     srv.detach();
 
-
-    /*  if(digitalRead(IR_SENSOR_1) == LOW) return 0;
-      if(digitalRead(IR_SENSOR_0) == LOW) return 3;
-     */ 
-     if(stanga_135 >= dreapta_45 && stanga_135 >= stanga && stanga_135 >= dreapta){
-       // Serial.print("Stanga_135 : ");
-       // Serial.print(stanga_135);
-       // Serial.println(" 2");
+     if(stanga_135 >= dreapta_45 && stanga_135 >= stanga && stanga_135 >= dreapta)
+     {
+       // left 135
           return 2;
       }
 
-       if(dreapta_45 >= stanga_135 && dreapta_45 >= stanga && dreapta_45 >= dreapta){
-       // Serial.print("dreapta 45 : ");
-       // Serial.print(dreapta_45);
-       // Serial.println(" 3");
+       if(dreapta_45 >= stanga_135 && dreapta_45 >= stanga && dreapta_45 >= dreapta)
+       {
+       // right 45
           return 3;
       }
 
-      if(dreapta >= dreapta_45 && dreapta >= stanga_135 && dreapta >= stanga){
-      //  Serial.print("Dreapta : ");
-       //  Serial.print(dreapta);
-      //  Serial.println("  0");
+      if(dreapta >= dreapta_45 && dreapta >= stanga_135 && dreapta >= stanga)
+      {
+      // right
           return 0;
       }
 
-      if(stanga >= dreapta_45 && stanga >= stanga_135 && stanga >= dreapta){
-      // Serial.print("Stanga : ");
-      // Serial.print(stanga);
-      // Serial.println(" 1");
+      if(stanga >= dreapta_45 && stanga >= stanga_135 && stanga >= dreapta)
+      {
+      // left
           return 1;
       }
 }
 
 unsigned long distance_from_obstacle;
 byte rotation_degrees;
- short switch_direction_sensor_3 = -1;
+short switch_direction_sensor_3 = -1;
+
 void autonomousRoutine()
 {
       distance_from_obstacle = getDistance();
     
      if(distance_from_obstacle > 100)
               lights(0);
-      else if(distance_from_obstacle > 80 && distance_from_obstacle <= 100)
+      else 
+      if(distance_from_obstacle > 80 && distance_from_obstacle <= 100)
               lights(1);
-      else if(distance_from_obstacle > 60 && distance_from_obstacle <= 80)
+      else 
+      if(distance_from_obstacle > 60 && distance_from_obstacle <= 80)
               lights(2);
-      else if(distance_from_obstacle > 45 && distance_from_obstacle <= 60)
+      else 
+      if(distance_from_obstacle > 45 && distance_from_obstacle <= 60)
               lights(3);
-      else if(distance_from_obstacle > 37 && distance_from_obstacle <= 45)
+      else 
+      if(distance_from_obstacle > 37 && distance_from_obstacle <= 45)
               lights(4);
-      else if(distance_from_obstacle <= 37)
+      else 
+      if(distance_from_obstacle <= 37)
               lights(5);
 
-      if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == LOW && digitalRead(IR_SENSOR_2) == HIGH ){
+      if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == LOW && digitalRead(IR_SENSOR_2) == HIGH ) 
+      {
+            go(0,0);
+            delay(500);
+            go(motor1_speed_turn,-motor2_speed_turn );
+            delay(400);
+            go(0,0);
+            delay(100);
+      } 
+      else 
+      if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == LOW )
+      {
            go(0,0);
-            delay(500);
-             go(motor1_speed_turn,-motor2_speed_turn );
-                delay(400);
-                go(0,0);
-                delay(100);
-      } else if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == LOW ) {
-        go(0,0);
-            delay(500);
-             go(-motor1_speed_turn ,motor2_speed_turn );
-                delay(400);
-                go(0,0);
-               delay(100);
-      } else if(distance_from_obstacle > 10 && digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == HIGH && digitalRead(IR_SENSOR_3) == LOW){
+           delay(500);
+           go(-motor1_speed_turn ,motor2_speed_turn );
+           delay(400);
+           go(0,0);
+           delay(100);
+      }
+      else 
+      if(distance_from_obstacle > 10 && digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == HIGH && digitalRead(IR_SENSOR_3) == LOW)
+      {
              go(0,0);
             delay(500);
              go(-motor1_speed_turn * switch_direction_sensor_3 ,motor2_speed_turn * switch_direction_sensor_3);
@@ -333,7 +353,10 @@ void autonomousRoutine()
                 delay(400);
                 go(0,0);
                delay(100);
-      }else  if(distance_from_obstacle <= 10 || digitalRead(IR_SENSOR_2) == LOW || digitalRead(IR_SENSOR_1) == LOW ){ //25 cm
+      }
+      else  
+      if(distance_from_obstacle <= 10 || digitalRead(IR_SENSOR_2) == LOW || digitalRead(IR_SENSOR_1) == LOW )
+      { //25 cm
       
            digitalWrite(GREEN_LED , LOW);
             go(0,0);
@@ -350,7 +373,8 @@ void autonomousRoutine()
               delay(500);
               
             }
-            else if(rotation_degrees == 1)
+            else 
+            if(rotation_degrees == 1)
             {
              //TREBUIE SA MEARGA IN STANGA, dar merge?!
               go(-motor1_speed_turn ,motor2_speed_turn );
@@ -359,13 +383,18 @@ void autonomousRoutine()
               delay(500);
               
                  
-            } else if (rotation_degrees == 2){
+            }
+            else 
+            if (rotation_degrees == 2)
+            {
              //STANGA 135
               go(-motor1_speed_turn ,motor2_speed_turn);
               delay(400);
               go(0,0);
               delay(400);
-            } else {
+            }
+            else 
+            {
                //DREAPTA 45
                 go(motor1_speed_turn ,-motor2_speed_turn );
                 delay(400);
@@ -385,15 +414,16 @@ void autonomousRoutine()
      
 }
 
-void loop() {
+void loop() 
+{
 
 
- if (irrecv.decode(&results))
+ if (irrecv.decode(&results))                   // If there are results to be decoded, decode them and do the task according to the received code.
  {
 
   
  // Serial.println(results.value, HEX);
-        if(autonomous)
+        if(autonomous)                          // If the robot is autonomous, if the pressed key is 1, the robot becomes non-autonomous, else(if it is non-aut), if key = 3, the robot becomes autonomous.
         {
             if(results.value == 0xFF30CF)
             {
@@ -410,53 +440,42 @@ void loop() {
             } 
             else 
             {
-              switch(results.value)
+              switch(results.value)             // if the robot is non-autonomous and if:
                          {
-                                                        case 0xFF18E7:
+                                                        case 0xFF18E7:                  //key = 2, go forward
                                                                         {
-                                                                       // Serial.println("2");
                                                                           go(motor1_speed,motor2_speed);
-                                                                         // delay(500);
-                                                                        // Serial.println("forward");
-                                                                        break ;
+                                                                          break ;
                                                                         }
-                                                        case 0xFF10EF:
+                                                        case 0xFF10EF:                  //key = 4, turn left  
                                                                       {
-                                                                      //Serial.println("4");
-                                                                     // Serial.println("left");
-                                                                      go(-motor1_speed, motor2_speed);
-                                                                      delay(500);
-                                                                      go(0,0);
-                                                                      break ;
-                                                                      }
-                                                        case 0xFF38C7:
-                                                                        {
-                                                                       // Serial.println("5");
-                                                                       //    Serial.println("stop");
-                                                                        go(0,0);
-                                                                        break ;
-                                                                        }
-                                                          case 0xFF5AA5:
-                                                                        {
-                                                                        //Serial.println("6");
-                                                                        //   Serial.println("right");
-                                                                        go(motor1_speed, -motor2_speed);
+                                                                        go(-motor1_speed, motor2_speed);
                                                                         delay(500);
                                                                         go(0,0);
                                                                         break ;
-                                                                        }
-                                                          case 0xFF4AB5:
+                                                                      }
+                                                        case 0xFF38C7:                  //key = 5, stop
                                                                         {
-                                                                       // Serial.println("8");
-                                                                        go(-motor1_speed, -motor2_speed);
-                                                                        //Serial.println("backwards");
-                                                                        break ;
+                                                                          go(0,0);
+                                                                          break ;
+                                                                        }
+                                                          case 0xFF5AA5:                 //key = 6, turn right
+                                                                        {
+                                                                          go(motor1_speed, -motor2_speed);
+                                                                          delay(500);
+                                                                          go(0,0);
+                                                                          break ;
+                                                                        }
+                                                          case 0xFF4AB5:                  //key = 8, go backwards
+                                                                        {
+                                                                          go(-motor1_speed, -motor2_speed);
+                                                                          break ;
                                                                         }
                           }
-                          key_value = results.value;
+                          key_value = results.value;                                       // Save the value of the key pressed.
               }
        }
-     irrecv.resume(); 
+     irrecv.resume();     //  After receiving, this must be called to reset the receiver and prepare it to receive another code.                 
   } 
   
   if(autonomous)
@@ -464,43 +483,25 @@ void loop() {
     autonomousRoutine();
     blink_green_led();
    
-  } else {
+  }
+  else 
+  {
     distance_from_obstacle = getDistance();
-        if(distance_from_obstacle < 80){
-             BUZZER_DELAY = 250;
-             buzzer_buzz();
-             if(distance_from_obstacle < 40){
-              go(0,0);
+        if(distance_from_obstacle < 80)
+        {
+               BUZZER_DELAY = 250;
+               buzzer_buzz();
+               if(distance_from_obstacle < 40)
+               {
+                go(0,0);
                }
-        } else {
+        } 
+        else 
+        {
           BUZZER_DELAY = -99999;
            buzzer_buzz();
         }
   }
  
-  
-/*
-  
-  Serial.println(getDistance());
-   if(digitalRead(IR_SENSOR_1) == LOW){
-    Serial.println("Obstacol sensor stanga");
-   } else {
-     Serial.println("NU Obstacol sensor stanga");
-   }
 
-    if(digitalRead(IR_SENSOR_2) == LOW){
-    Serial.println("Obstacol sensor dreapta");
-   } else {
-     Serial.println("NU Obstacol sensor dreapta");
-   }
-
-    if(digitalRead(IR_SENSOR_3) == LOW){
-    Serial.println("Obstacol sensor mijloc");
-   } else {
-     Serial.println("NU Obstacol sensor mijloc");
-   }
-Serial.println();Serial.println();
-delay(500);
-  
-  */
 }

@@ -87,21 +87,28 @@ void lights(int i)
   digitalWrite(latch,HIGH);   
 }
 
+
+/*
+ *   The buzzer buzzes 250 miliseconds after that it does not buzz for another 250 miliseconds
+ */
 void buzzer_buzz()
 {
+   // -99999 value for BUZZER_DELAY to not buzz
   if(BUZZER_DELAY != -99999)
   {
     currentMillis = millis();
+	// checking if an amount of time has passed : BUZZER_DELAY which is 250 miliseconds
+    //BUZZER_TIMER is initialy 0
     if(currentMillis - BUZZER_TIMER >= BUZZER_DELAY)
     {
             if(BUZZER_STATE)
             {
-                 digitalWrite(BUZZER_PIN , LOW);
+                 digitalWrite(BUZZER_PIN , LOW);     // not BUZZ
                  BUZZER_STATE = false;
-            } 
+            }  
             else 
             {
-              digitalWrite(BUZZER_PIN , HIGH);
+              digitalWrite(BUZZER_PIN , HIGH);      // BUZZ
                 BUZZER_STATE = true;
             }
             BUZZER_TIMER = currentMillis;
@@ -113,9 +120,14 @@ void buzzer_buzz()
     }
 }
 
+
+/*
+ * The led is on for 250 miliseconds after that is off for 250 miliseconds
+ */
 void blink_green_led()
 {
   currentMillis = millis();
+   //  GREEN_LED_DELAY is 250 miliseconds
   if(currentMillis - GREEN_LED_TIMER >= GREEN_LED_DELAY)
   {
           if(GREEN_LED_STATE){
@@ -217,7 +229,7 @@ void setup()
   srv.detach();
   delay(500);
 
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
 }
 
@@ -321,6 +333,8 @@ void autonomousRoutine()
 
       if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == LOW && digitalRead(IR_SENSOR_2) == HIGH ) 
       {
+			// if left sensor detects an obstacle the robot stops for 500 miliseconds after that it turns to right for 400 miliseconds
+			// after that it stops for 100 miliseconds
             go(0,0);
             delay(500);
             go(motor1_speed_turn,-motor2_speed_turn );
@@ -331,6 +345,8 @@ void autonomousRoutine()
       else 
       if(distance_from_obstacle > 10 &&  digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == LOW )
       {
+		   // if right sensor detects an obstacle the robot stops for 500 miliseconds after that it turns to left for 400 miliseconds
+		   // after that it stops for 100 miliseconds
            go(0,0);
            delay(500);
            go(-motor1_speed_turn ,motor2_speed_turn );
@@ -341,8 +357,9 @@ void autonomousRoutine()
       else 
       if(distance_from_obstacle > 10 && digitalRead(IR_SENSOR_1) == HIGH && digitalRead(IR_SENSOR_2) == HIGH && digitalRead(IR_SENSOR_3) == LOW)
       {
+			  // if middle sensor detects an obstacle the robot stops for 500 miliseconds 
              go(0,0);
-            delay(500);
+             delay(500);
              go(-motor1_speed_turn * switch_direction_sensor_3 ,motor2_speed_turn * switch_direction_sensor_3);
              /* 1)Daca senzorul din mojloc vede un obstacol se intoarce spre stanga
               * 2)Daca senzorul din stanga vede un obstacol se intoarce sprea dreapta
